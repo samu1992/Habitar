@@ -1,0 +1,18 @@
+# =====================================================================
+# ANEXO — solo resguardo. No afecta el despliegue en Vercel.
+# Uso: cp .env.example .env && docker compose up --build
+# =====================================================================
+services:
+  web:
+    build:
+      context: .
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+      ACCESS_CODE: ${ACCESS_CODE}
+    restart: unless-stopped

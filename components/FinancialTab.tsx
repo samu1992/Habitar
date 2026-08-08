@@ -1,0 +1,131 @@
+'use client';
+
+import { useActionState, useState, useTransition } from 'react';
+import Sheet from './Sheet';
+import BudgetGauge from './BudgetGauge';
+import { addFinancial, deleteFinancial } from '@/app/actions';
+import { money, shortDate } from '@/lib/format';
+import type { Financial } from '@/lib/types';
+
+/** TAB 2 — El termómetro: cuánto entró, cuánto salió, cuánto queda. */
+export default function FinancialTab({
+  projectId, totalBudget, rows,
+}: { projectId: string; totalBudget: number; rows: Financial[] }) {
+  const [open, setOpen] = useState(false);
+  const [type, setType] = useState<'Egreso' | 'Ingreso'>('Egreso');
+  const [state, action, pending] = useActionState(addFinancial, null);
+  const [, startTransition] = useTransition();
+
+  const ingresos = rows.filter((r) => r.type === 'Ingreso').reduce((s, r) => s + Number(r.amount), 0);
+  const egresos = rows.filter((r) => r.type === 'Egreso').reduce((s, r) => s + Number(r.amount), 0);
+
+  return (
+    <div className="space-y-6">
+      <section className="rounded-2xl border border-obra-line bg-obra-surface p-5">
+        <BudgetGauge spent={egresos} total={Number(totalBudget)} />
+      </section>
+
+      <div className="grid grid-cols-2 gap-3">
+        <div className="rounded-xl border border-obra-line bg-obra-surface p-4">
+          <p className="label mb-1">Cobrado</p>
+          <p className="tabular font-display text-xl font-semibold text-sage">{money(ingresos)}</p>
+        </div>
+        <div className="rounded-xl border border-obra-line bg-obra-surface p-4">
+          <p className="label mb-1">Gastado</p>
+          <p className="tabular font-display text-xl font-semibold text-clay">{money(egresos)}</p>
+        </div>
+      </div>
+
+      <section>
+        <h2 className="label">Movimientos</h2>
+        {rows.length === 0 ? (
+          <p className="rounded-xl border border-dashed border-obra-line p-6 text-center text-sm text-muted">
+            Sin movimientos. Tocá el + para cargar el primero.
+          </p>
+        ) : (
+          <ul className="overflow-hidden rounded-xl border border-obra-line bg-obra-surface">
+            {rows.map((r, i) => {
+              const income = r.type === 'Ingreso';
+              return (
+                <li key={r.id} className={`flex items-center gap-3 px-4 py-3.5 ${i ? 'border-t border-obra-line' : ''}`}>
+                  <span className={`h-8 w-1 shrink-0 rounded-full ${income ? 'bg-sage' : 'bg-clay'}`} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{r.description}</p>
+                    <p className="tabular text-xs text-muted">{shortDate(r.date)}</p>
+                  </div>
+                  <span className={`tabular shrink-0 text-sm font-semibold ${income ? 'text-sage' : 'text-ink'}`}>
+                    {income ? '+' : '−'}{money(Number(r.amount))}
+                  </span>
+                  <button
+                    onClick={() => {
+                      if (confirm('¿Borrar este movimiento?')) {
+                        startTransition(() => { deleteFinancial(r.id, projectId); });
+                      }
+                    }}
+                    aria-label={`Borrar ${r.description}`}
+                    className="shrink-0 px-2 text-muted"
+                  >
+                    ×
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
+      {/* FAB: carga en menos de 10 segundos, parado en el mostrador */}
+      <button
+        onClick={() => setOpen(true)}
+        className="fixed bottom-24 right-5 z-40 h-16 w-16 rounded-full bg-brass text-3xl font-light text-obra-bg shadow-lg shadow-black/40 active:bg-brass-deep"
+        aria-label="Agregar movimiento"
+      >
+        +
+      </button>
+
+      <Sheet open={open} onClose={() => setOpen(false)} title="Nuevo movimiento">
+        <form action={action} className="space-y-4">
+          <input type="hidden" name="project_id" value={projectId} />
+          <input type="hidden" name="type" value={type} />
+
+          <div className="grid grid-cols-2 gap-2 rounded-xl bg-obra-raised p-1">
+            {(['Egreso', 'Ingreso'] as const).map((t) => (
+              <button
+                key={t} type="button" onClick={() => setType(t)}
+                className={`rounded-lg py-3 text-sm font-semibold ${
+                  type === t ? (t === 'Ingreso' ? 'bg-sage text-obra-bg' : 'bg-clay text-obra-bg') : 'text-muted'
+                }`}
+              >
+                {t === 'Egreso' ? 'Gasto' : 'Cobro'}
+              </button>
+            ))}
+          </div>
+
+          <div>
+            <label className="label" htmlFor="f-amount">Monto</label>
+            <input
+              id="f-amount" name="amount" inputMode="decimal" autoFocus
+              className="field tabular text-center font-display text-3xl" placeholder="0"
+            />
+          </div>
+          <div>
+            <label className="label" htmlFor="f-desc">Concepto</label>
+            <input id="f-desc" name="description" className="field" placeholder="Látex interior · 20 L" />
+          </div>
+          <div>
+            <label className="label" htmlFor="f-date">Fecha</label>
+            <input
+              id="f-date" name="date" type="date" className="field"
+              defaultValue={new Date().toISOString().slice(0, 10)}
+            />
+          </div>
+
+          {state && !state.ok && <p className="text-sm text-alert">{state.error}</p>}
+          <button className="btn-primary" disabled={pending}>
+            {pending ? 'Guardando…' : 'Guardar movimiento'}
+          </button>
+        </form>
+      </Sheet>
+    </div>
+  );
+}

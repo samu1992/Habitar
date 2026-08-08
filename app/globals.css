@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    background: #121110;
+    color-scheme: dark;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    /* Zona segura del iPhone: la barra inferior no queda bajo el gesto de home. */
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  /* Los montos van en cifras de ancho fijo para que las columnas no bailen. */
+  .tabular { font-variant-numeric: tabular-nums; }
+
+  input, select, textarea {
+    font-size: 16px; /* menos de 16px hace que iOS haga zoom al enfocar */
+  }
+  :focus-visible {
+    outline: 2px solid #C79A56;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  .field {
+    @apply w-full rounded-xl bg-obra-raised border border-obra-line px-4 py-3.5
+           text-ink placeholder:text-muted/60 focus:border-brass focus:outline-none;
+  }
+  .label {
+    @apply block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted mb-2;
+  }
+  .btn-primary {
+    @apply w-full rounded-xl bg-brass py-4 text-center font-semibold text-obra-bg
+           active:bg-brass-deep disabled:opacity-50;
+  }
+  .btn-ghost {
+    @apply rounded-xl border border-obra-line bg-obra-raised px-4 py-3
+           text-sm font-medium text-ink active:bg-obra-line;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
