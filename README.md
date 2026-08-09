@@ -78,6 +78,3 @@ self-hosting. Vercel no los mira.
 ```bash
 cp .env.example .env && docker compose up --build
 ```
-## -- https://uydlzfwdvpdwhevilupo.supabase.co/rest/v1/
-## -- public (sb_publishable_cPQpbj3lM_VkVGlcY2gJaw_JDJK34e4)
- ## -- secret key (sb_secret_0hrKwpykJu0TC6z8wGlTVQ_Ns5V5up0)
