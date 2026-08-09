@@ -3,7 +3,7 @@
 import { useActionState, useState } from 'react';
 import Sheet from './Sheet';
 import { createProject } from '@/app/actions';
-import { SERVICES } from '@/lib/constants';
+import { MIN_PROFIT_PCT, SERVICES } from '@/lib/constants';
 
 export default function NewProjectSheet() {
   const [open, setOpen] = useState(false);
@@ -41,13 +41,17 @@ export default function NewProjectSheet() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label" htmlFor="np-budget">Presupuesto</label>
+              <label className="label" htmlFor="np-budget">Presupuesto total</label>
               <input id="np-budget" name="total_budget" inputMode="decimal" className="field tabular" placeholder="0" />
             </div>
             <div>
-              <label className="label" htmlFor="np-date">Inicio</label>
-              <input id="np-date" name="start_date" type="date" className="field" />
+              <label className="label" htmlFor="np-profit">Ganancia del estudio (%)</label>
+              <input id="np-profit" name="studio_profit_pct" inputMode="decimal" className="field tabular" defaultValue={MIN_PROFIT_PCT} />
             </div>
+          </div>
+          <div>
+            <label className="label" htmlFor="np-date">Inicio</label>
+            <input id="np-date" name="start_date" type="date" className="field" />
           </div>
 
           {state && !state.ok && <p className="text-sm text-alert">{state.error}</p>}

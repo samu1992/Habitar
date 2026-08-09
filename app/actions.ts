@@ -77,6 +77,7 @@ export async function createProject(_prev: Result | null, fd: FormData): Promise
       service_type: str(fd.get('service_type')) || 'Integral',
       status: 'Onboarding',
       total_budget: num(fd.get('total_budget')),
+      studio_profit_pct: num(fd.get('studio_profit_pct')),
       start_date: str(fd.get('start_date')) || null,
     })
     .select('id')
@@ -104,6 +105,12 @@ export async function updateProject(_prev: Result | null, fd: FormData): Promise
   if (!id) return { ok: false, error: 'Proyecto no encontrado.' };
   if (!client_name) return { ok: false, error: 'Falta el nombre del cliente.' };
 
+  const total_budget = num(fd.get('total_budget'));
+  const studio_profit_pct = num(fd.get('studio_profit_pct'));
+  if (studio_profit_pct < 0 || studio_profit_pct > 100) {
+    return { ok: false, error: 'La ganancia tiene que ser un porcentaje entre 0 y 100.' };
+  }
+
   const { error } = await supabaseServer()
     .from('projects')
     .update({
@@ -111,7 +118,8 @@ export async function updateProject(_prev: Result | null, fd: FormData): Promise
       phone_number: str(fd.get('phone_number')) || null,
       address: str(fd.get('address')) || null,
       service_type: str(fd.get('service_type')),
-      total_budget: num(fd.get('total_budget')),
+      total_budget,
+      studio_profit_pct,
       start_date: str(fd.get('start_date')) || null,
     })
     .eq('id', id);
@@ -178,8 +186,60 @@ export async function addFinancial(_prev: Result | null, fd: FormData): Promise<
   return { ok: true };
 }
 
+/**
+ * Edición de un movimiento cargado a mano. Los movimientos que vienen de
+ * Logística (linked_logistic_id) no se tocan acá: se editan cambiando el
+ * ítem de logística que los generó, para que el vínculo no se desincronice.
+ */
+export async function updateFinancial(_prev: Result | null, fd: FormData): Promise<Result> {
+  const id = str(fd.get('id'));
+  const project_id = str(fd.get('project_id'));
+  const description = str(fd.get('description'));
+  const amount = num(fd.get('amount'));
+
+  if (!id) return { ok: false, error: 'Movimiento no encontrado.' };
+  if (!description) return { ok: false, error: 'Poné una descripción.' };
+  if (amount <= 0) return { ok: false, error: 'El monto tiene que ser mayor a cero.' };
+
+  const db = supabaseServer();
+  const { data: current, error: readErr } = await db
+    .from('financials')
+    .select('linked_logistic_id')
+    .eq('id', id)
+    .single();
+  if (readErr) return { ok: false, error: readErr.message };
+  if (current.linked_logistic_id) {
+    return { ok: false, error: 'Este movimiento viene de Logística: editalo desde ahí.' };
+  }
+
+  const { error } = await db
+    .from('financials')
+    .update({
+      type: str(fd.get('type')) || 'Egreso',
+      amount,
+      description,
+      date: str(fd.get('date')) || new Date().toISOString().slice(0, 10),
+    })
+    .eq('id', id);
+
+  if (error) return { ok: false, error: error.message };
+  refresh(project_id);
+  return { ok: true };
+}
+
 export async function deleteFinancial(id: string, projectId: string): Promise<Result> {
-  const { error } = await supabaseServer().from('financials').delete().eq('id', id);
+  const db = supabaseServer();
+  const { data: current, error: readErr } = await db
+    .from('financials')
+    .select('linked_logistic_id')
+    .eq('id', id)
+    .single();
+  if (readErr) return { ok: false, error: readErr.message };
+  if (current.linked_logistic_id) {
+    return { ok: false, error: 'Este movimiento viene de Logística: desmarcá el ítem para borrarlo.' };
+  }
+
+  const { error } = await db.from('financials').delete().eq('id', id);
   if (error) return { ok: false, error: error.message };
   refresh(projectId);
   return { ok: true };
@@ -188,6 +248,56 @@ export async function deleteFinancial(id: string, projectId: string): Promise<Re
 /* ===================================================================
  * LOGÍSTICA
  * =================================================================== */
+
+/**
+ * Mantiene el movimiento financiero de un ítem de logística al día con su
+ * estado y su costo:
+ *  - Si el ítem está comprado/finalizado (status !== 'Pendiente') y tiene
+ *    costo > 0, crea o actualiza el movimiento vinculado (Egreso).
+ *  - Si se desmarca (vuelve a 'Pendiente') o queda sin costo, borra el
+ *    movimiento vinculado — el presupuesto se libera solo.
+ * La llaman todas las acciones que tocan status/real_cost/expected_cost.
+ */
+async function syncLinkedFinancial(
+  db: ReturnType<typeof supabaseServer>,
+  logisticsId: string,
+  projectId: string
+): Promise<void> {
+  const { data: item } = await db
+    .from('logistics')
+    .select('category, item_name, status, expected_cost, real_cost')
+    .eq('id', logisticsId)
+    .single();
+  if (!item) return;
+
+  const purchased = item.status !== 'Pendiente';
+  const amount = Number(item.real_cost ?? item.expected_cost ?? 0);
+
+  if (purchased && amount > 0) {
+    const label = item.category === 'Shopping List' ? 'Lista de compras' : item.category;
+    const description = `${label}: ${item.item_name}`;
+
+    const { data: existing } = await db
+      .from('financials')
+      .select('id')
+      .eq('linked_logistic_id', logisticsId)
+      .maybeSingle();
+
+    if (existing) {
+      await db.from('financials').update({ amount, description }).eq('id', existing.id);
+    } else {
+      await db.from('financials').insert({
+        project_id: projectId,
+        type: 'Egreso',
+        amount,
+        description,
+        linked_logistic_id: logisticsId,
+      });
+    }
+  } else {
+    await db.from('financials').delete().eq('linked_logistic_id', logisticsId);
+  }
+}
 
 export async function addLogistics(_prev: Result | null, fd: FormData): Promise<Result> {
   const project_id = str(fd.get('project_id'));
@@ -199,12 +309,42 @@ export async function addLogistics(_prev: Result | null, fd: FormData): Promise<
     category: str(fd.get('category')) || 'Material',
     item_name,
     supplier_or_worker_name: str(fd.get('supplier_or_worker_name')) || null,
+    description: str(fd.get('description')) || null,
     expected_cost: num(fd.get('expected_cost')),
     contact_phone: str(fd.get('contact_phone')) || null,
     status: 'Pendiente',
   });
 
   if (error) return { ok: false, error: error.message };
+  refresh(project_id);
+  return { ok: true };
+}
+
+/** Edición completa de un ítem de logística (material, contratista o compra). */
+export async function updateLogistics(_prev: Result | null, fd: FormData): Promise<Result> {
+  const id = str(fd.get('id'));
+  const project_id = str(fd.get('project_id'));
+  const item_name = str(fd.get('item_name'));
+  if (!id) return { ok: false, error: 'Ítem no encontrado.' };
+  if (!item_name) return { ok: false, error: 'Falta el nombre del ítem.' };
+
+  const realCostRaw = str(fd.get('real_cost'));
+
+  const db = supabaseServer();
+  const { error } = await db
+    .from('logistics')
+    .update({
+      item_name,
+      supplier_or_worker_name: str(fd.get('supplier_or_worker_name')) || null,
+      description: str(fd.get('description')) || null,
+      expected_cost: num(fd.get('expected_cost')),
+      real_cost: realCostRaw ? num(fd.get('real_cost')) : null,
+      contact_phone: str(fd.get('contact_phone')) || null,
+    })
+    .eq('id', id);
+
+  if (error) return { ok: false, error: error.message };
+  await syncLinkedFinancial(db, id, project_id);
   refresh(project_id);
   return { ok: true };
 }
@@ -240,6 +380,32 @@ export async function cycleLogisticsStatus(id: string, projectId: string): Promi
 
   const { error } = await db.from('logistics').update(patch).eq('id', id);
   if (error) return { ok: false, error: error.message };
+  await syncLinkedFinancial(db, id, projectId);
+  refresh(projectId);
+  return { ok: true };
+}
+
+/**
+ * El checkbox de la Lista de Compras (Shopping List): a diferencia del ciclo
+ * de tres estados de Materiales/Contratistas, acá es un simple comprado/no
+ * comprado.
+ */
+export async function toggleShoppingPurchased(id: string, projectId: string): Promise<Result> {
+  const db = supabaseServer();
+  const { data, error: readErr } = await db
+    .from('logistics')
+    .select('status, expected_cost, real_cost')
+    .eq('id', id)
+    .single();
+  if (readErr) return { ok: false, error: readErr.message };
+
+  const status: LogisticsStatus = data.status === 'Pendiente' ? 'Finalizado' : 'Pendiente';
+  const patch: Record<string, unknown> = { status };
+  if (status === 'Finalizado' && data.real_cost == null) patch.real_cost = data.expected_cost ?? 0;
+
+  const { error } = await db.from('logistics').update(patch).eq('id', id);
+  if (error) return { ok: false, error: error.message };
+  await syncLinkedFinancial(db, id, projectId);
   refresh(projectId);
   return { ok: true };
 }
@@ -248,11 +414,13 @@ export async function cycleLogisticsStatus(id: string, projectId: string): Promi
 export async function setRealCost(_prev: Result | null, fd: FormData): Promise<Result> {
   const id = str(fd.get('id'));
   const projectId = str(fd.get('project_id'));
-  const { error } = await supabaseServer()
+  const db = supabaseServer();
+  const { error } = await db
     .from('logistics')
     .update({ real_cost: num(fd.get('real_cost')) })
     .eq('id', id);
   if (error) return { ok: false, error: error.message };
+  await syncLinkedFinancial(db, id, projectId);
   refresh(projectId);
   return { ok: true };
 }

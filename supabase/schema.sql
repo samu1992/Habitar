@@ -198,6 +198,36 @@ create policy logistics_all on public.logistics
 
 
 -- ---------------------------------------------------------------------
+-- 10. MIGRACIÓN — edición de movimientos/logística, vínculo
+--     Logística↔Finanzas, Lista de Compras (Integral), margen del estudio.
+-- ---------------------------------------------------------------------
+
+-- 10.1 Nueva categoría de logística, exclusiva del servicio Integral.
+alter type logistics_category add value if not exists 'Shopping List';
+
+-- 10.2 Detalle/descripción por ítem (lo usa la Lista de Compras).
+alter table public.logistics add column if not exists description text;
+
+-- 10.3 Margen de ganancia del estudio como % del presupuesto total del cliente.
+alter table public.projects
+  add column if not exists studio_profit_pct numeric(5,2) not null default 30 check (studio_profit_pct >= 0 and studio_profit_pct <= 100);
+
+-- 10.4 Vínculo financials → logistics: el movimiento que se crea solo al
+--      marcar un ítem como comprado/finalizado, y que se borra solo si se
+--      desmarca. on delete cascade: si se borra el ítem de logística, el
+--      movimiento que generó se borra con él.
+alter table public.financials
+  add column if not exists linked_logistic_id uuid references public.logistics(id) on delete cascade;
+
+create index if not exists financials_linked_logistic_idx
+  on public.financials (linked_logistic_id);
+
+-- A lo sumo un movimiento financiero por ítem de logística.
+create unique index if not exists financials_linked_logistic_uidx
+  on public.financials (linked_logistic_id) where linked_logistic_id is not null;
+
+
+-- ---------------------------------------------------------------------
 -- 9. SEED de prueba (borrable)
 --    Comentá este bloque si no querés datos de ejemplo.
 -- ---------------------------------------------------------------------

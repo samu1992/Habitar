@@ -128,13 +128,17 @@ export default function SummaryTab({ project }: { project: Project }) {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="label" htmlFor="e-budget">Presupuesto</label>
+              <label className="label" htmlFor="e-budget">Presupuesto total</label>
               <input id="e-budget" name="total_budget" inputMode="decimal" className="field tabular" defaultValue={project.total_budget} />
             </div>
             <div>
-              <label className="label" htmlFor="e-date">Inicio</label>
-              <input id="e-date" name="start_date" type="date" className="field" defaultValue={project.start_date ?? ''} />
+              <label className="label" htmlFor="e-profit">Ganancia del estudio (%)</label>
+              <input id="e-profit" name="studio_profit_pct" inputMode="decimal" className="field tabular" defaultValue={project.studio_profit_pct} />
             </div>
+          </div>
+          <div>
+            <label className="label" htmlFor="e-date">Inicio</label>
+            <input id="e-date" name="start_date" type="date" className="field" defaultValue={project.start_date ?? ''} />
           </div>
           {editState && !editState.ok && <p className="text-sm text-alert">{editState.error}</p>}
           <button className="btn-primary" disabled={editPending}>

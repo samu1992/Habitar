@@ -46,9 +46,16 @@ export default function ProjectView({
       <div className="px-5 pt-6">
         {tab === 'resumen' && <SummaryTab project={project} />}
         {tab === 'finanzas' && (
-          <FinancialTab projectId={project.id} totalBudget={Number(project.total_budget)} rows={financials} />
+          <FinancialTab
+            projectId={project.id}
+            totalBudget={Number(project.total_budget ?? 0)}
+            studioProfitPct={Number(project.studio_profit_pct ?? 0)}
+            rows={financials}
+          />
         )}
-        {tab === 'logistica' && <LogisticsTab projectId={project.id} rows={logistics} />}
+        {tab === 'logistica' && (
+          <LogisticsTab projectId={project.id} serviceType={project.service_type} rows={logistics} />
+        )}
       </div>
 
       <BottomTabBar active={tab} onChange={setTab} badge={{ logistica: pendientes }} />

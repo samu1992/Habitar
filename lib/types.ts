@@ -1,7 +1,7 @@
 export type ServiceType = 'Integral' | 'Pintura' | 'Consultoría';
 export type ProjectStatus = 'Onboarding' | 'Pre-Producción' | 'Producción' | 'Entrega';
 export type FinancialType = 'Ingreso' | 'Egreso';
-export type LogisticsCategory = 'Material' | 'Contratista';
+export type LogisticsCategory = 'Material' | 'Contratista' | 'Shopping List';
 export type LogisticsStatus = 'Pendiente' | 'En Curso/Comprado' | 'Finalizado';
 
 export interface Project {
@@ -11,6 +11,8 @@ export interface Project {
   service_type: ServiceType;
   status: ProjectStatus;
   total_budget: number;
+  /** Ganancia del estudio como % del presupuesto total (ej. 30 = 30%). */
+  studio_profit_pct: number;
   start_date: string | null;
   address: string | null;
   notes: string | null;
@@ -42,6 +44,10 @@ export interface Financial {
   description: string;
   date: string;
   created_at: string;
+  /** Si no es null, este movimiento lo generó automáticamente un ítem de
+   * logística al marcarse como comprado/finalizado. No se edita ni se borra
+   * a mano: se sincroniza solo desde Logística. */
+  linked_logistic_id: string | null;
 }
 
 export interface Logistics {
@@ -50,6 +56,7 @@ export interface Logistics {
   category: LogisticsCategory;
   item_name: string;
   supplier_or_worker_name: string | null;
+  description: string | null;
   expected_cost: number | null;
   real_cost: number | null;
   status: LogisticsStatus;

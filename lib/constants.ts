@@ -16,3 +16,10 @@ export const STATUS_CHIP: Record<ProjectStatus, string> = {
 };
 
 export const SERVICES: ServiceType[] = ['Integral', 'Pintura', 'Consultoría'];
+
+/**
+ * Piso de ganancia del estudio sobre el presupuesto total: nunca debería
+ * cobrarse menos de esto, sin importar el tamaño de la obra. Por debajo,
+ * el % se pinta en rojo en la pestaña de Finanzas como alerta.
+ */
+export const MIN_PROFIT_PCT = 30;

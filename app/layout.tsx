@@ -32,7 +32,7 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={`${display.variable} ${body.variable}`}>
-      <body className="bg-obra-bg font-sans text-ink antialiased">{children}</body>
+      <body className="bg-obra-bg font-sans text-ink antialiased" suppressHydrationWarning>{children}</body>
     </html>
   );
 }
