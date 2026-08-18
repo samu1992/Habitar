@@ -19,22 +19,25 @@
     font-size: 16px; /* menos de 16px hace que iOS haga zoom al enfocar */
   }
   :focus-visible {
-    outline: 2px solid #C79A56;
+    outline: 2px solid #F5F1E2;
     outline-offset: 2px;
+  }
+  .font-semibold, .font-bold {
+    letter-spacing: 0.5px;
   }
 }
 
 @layer components {
   .field {
     @apply w-full rounded-xl bg-obra-raised border border-obra-line px-4 py-3.5
-           text-ink placeholder:text-muted/60 focus:border-brass focus:outline-none;
+           text-ink placeholder:text-muted/60 focus:border-ink focus:outline-none;
   }
   .label {
     @apply block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted mb-2;
   }
   .btn-primary {
-    @apply w-full rounded-xl bg-brass py-4 text-center font-semibold text-obra-bg
-           active:bg-brass-deep disabled:opacity-50;
+    @apply w-full rounded-xl bg-ink py-4 text-center font-semibold text-obra-bg
+           active:bg-ink/80 disabled:opacity-50;
   }
   .btn-ghost {
     @apply rounded-xl border border-obra-line bg-obra-raised px-4 py-3

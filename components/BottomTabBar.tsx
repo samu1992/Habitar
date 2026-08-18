@@ -35,14 +35,14 @@ export default function BottomTabBar({
               key={t.key}
               onClick={() => onChange(t.key)}
               aria-current={on ? 'page' : undefined}
-              className={`relative flex flex-1 flex-col items-center gap-1 py-3.5 ${on ? 'text-brass' : 'text-muted'}`}
+              className={`relative flex flex-1 flex-col items-center gap-1 py-3.5 ${on ? 'text-ink' : 'text-muted'}`}
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden>
                 {t.icon}
               </svg>
               <span className="text-[11px] font-medium">{t.label}</span>
               {!!count && (
-                <span className="tabular absolute right-[22%] top-2 min-w-[18px] rounded-full bg-clay px-1 text-[10px] font-semibold leading-[18px] text-obra-bg">
+                <span className="tabular absolute right-[22%] top-2 min-w-[18px] rounded-full bg-mandarina px-1 text-[10px] font-semibold leading-[18px] text-obra-bg">
                   {count}
                 </span>
               )}

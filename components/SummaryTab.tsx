@@ -2,6 +2,7 @@
 
 import { useActionState, useRef, useState } from 'react';
 import Sheet from './Sheet';
+import CoverPicker from './CoverPicker';
 import { appendNote, updateProject, deleteProject } from '@/app/actions';
 import { SERVICES } from '@/lib/constants';
 import { money, shortDate, waLink } from '@/lib/format';
@@ -25,7 +26,7 @@ export default function SummaryTab({ project }: { project: Project }) {
           href={wa}
           target="_blank"
           rel="noopener"
-          className="flex items-center justify-center gap-3 rounded-2xl bg-sage py-6 text-lg font-semibold text-obra-bg active:brightness-90"
+          className="flex items-center justify-center gap-3 rounded-2xl bg-celeste py-6 text-lg font-semibold text-obra-bg active:brightness-90"
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
             <path d="M12 2a10 10 0 00-8.6 15L2 22l5.2-1.4A10 10 0 1012 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.7-.1-.4-.1-.9-.3-1.6-.6-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.4-1.1-2.7s.7-1.9 1-2.2c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.3 0 .5l-.4.5c-.1.2-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .8 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.9.9c.2.1.4.2.4.3.1.2.1.7-.1 1.3z" />
@@ -54,7 +55,7 @@ export default function SummaryTab({ project }: { project: Project }) {
         ))}
         <button
           onClick={() => setEditing(true)}
-          className="w-full border-t border-obra-line py-3.5 text-sm font-medium text-brass active:bg-obra-raised"
+          className="w-full border-t border-obra-line py-3.5 text-sm font-medium text-ink active:bg-obra-raised"
         >
           Editar datos
         </button>
@@ -75,7 +76,7 @@ export default function SummaryTab({ project }: { project: Project }) {
             className="field resize-none"
             placeholder="Qué pasó hoy en la obra…"
           />
-          {noteState && !noteState.ok && <p className="text-sm text-alert">{noteState.error}</p>}
+          {noteState && !noteState.ok && <p className="text-sm text-mandarina">{noteState.error}</p>}
           <button className="btn-primary" disabled={notePending}>
             {notePending ? 'Guardando…' : 'Agregar nota'}
           </button>
@@ -89,7 +90,7 @@ export default function SummaryTab({ project }: { project: Project }) {
                 <li key={i} className="rounded-xl border border-obra-line bg-obra-surface px-4 py-3">
                   {m ? (
                     <>
-                      <span className="tabular block text-[11px] font-semibold tracking-wide text-brass-deep">
+                      <span className="tabular block text-[11px] font-semibold tracking-wide text-muted">
                         {m[1].replace(/[[\]]/g, '')}
                       </span>
                       <span className="mt-1 block text-sm leading-relaxed">{m[2]}</span>
@@ -108,6 +109,7 @@ export default function SummaryTab({ project }: { project: Project }) {
       <Sheet open={editing} onClose={() => setEditing(false)} title="Editar proyecto">
         <form action={editAction} className="space-y-4">
           <input type="hidden" name="id" value={project.id} />
+          <CoverPicker currentUrl={project.cover_image_url} />
           <div>
             <label className="label" htmlFor="e-name">Cliente</label>
             <input id="e-name" name="client_name" className="field" defaultValue={project.client_name} />
@@ -140,7 +142,7 @@ export default function SummaryTab({ project }: { project: Project }) {
             <label className="label" htmlFor="e-date">Inicio</label>
             <input id="e-date" name="start_date" type="date" className="field" defaultValue={project.start_date ?? ''} />
           </div>
-          {editState && !editState.ok && <p className="text-sm text-alert">{editState.error}</p>}
+          {editState && !editState.ok && <p className="text-sm text-mandarina">{editState.error}</p>}
           <button className="btn-primary" disabled={editPending}>
             {editPending ? 'Guardando…' : 'Guardar cambios'}
           </button>
@@ -151,7 +153,7 @@ export default function SummaryTab({ project }: { project: Project }) {
                 deleteProject(project.id);
               }
             }}
-            className="w-full py-3 text-sm text-alert"
+            className="w-full py-3 text-sm text-mandarina"
           >
             Borrar proyecto
           </button>

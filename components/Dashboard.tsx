@@ -2,61 +2,79 @@
 
 import { useState } from 'react';
 import ProjectCard from './ProjectCard';
+import ProjectListRow from './ProjectListRow';
+import AddProjectTile from './AddProjectTile';
+import AddProjectRow from './AddProjectRow';
 import NewProjectSheet from './NewProjectSheet';
+import Logo from './Logo';
+import PrimaryNavBar from './PrimaryNavBar';
 import { STATUSES, STATUS_CHIP } from '@/lib/constants';
-import { money } from '@/lib/format';
 import type { ProjectOverview, ProjectStatus } from '@/lib/types';
+
+type View = 'todos' | 'etapa';
 
 /**
  * EL KANBAN DE BOLSILLO
  *
- * Las columnas horizontales de un kanban clásico obligan a desplazarse en dos
- * ejes en una pantalla vertical. Acá cada estado es un acordeón apilado: se
- * recorre con un solo pulgar, siempre hacia abajo.
+ * Dos formas de ver lo mismo: "Todos" es una grilla plana (una sola tarjeta
+ * de alta, arriba de todo) con la etapa como dato chico en cada tarjeta —
+ * el estado se sigue viendo en el landing, pero se cambia adentro de la
+ * ficha del proyecto (StatusSheet), no desde acá. "Por etapa" es el
+ * acordeón clásico para cuando lo que hace falta es organizar, no repasar.
  *
- * Producción arranca abierto porque es donde está la obra que se está
- * ejecutando hoy; el resto arranca cerrado para que la primera pantalla
- * entre completa sin scrollear.
+ * Las 4 secciones arrancan cerradas en la vista por etapa — cada carga de
+ * página (o refresh) vuelve a este mismo estado, no recuerda lo que había
+ * quedado abierto.
  */
 export default function Dashboard({ projects }: { projects: ProjectOverview[] }) {
+  const [view, setView] = useState<View>('todos');
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     'Onboarding': false,
-    'Pre-Producción': true,
-    'Producción': true,
+    'Pre-Producción': false,
+    'Producción': false,
     'Entrega': false,
   });
+  const [newProjectOpen, setNewProjectOpen] = useState(false);
 
   const toggle = (s: ProjectStatus) => setOpenGroups((g) => ({ ...g, [s]: !g[s] }));
   const grouped = (s: ProjectStatus) => projects.filter((p) => p.status === s);
 
-  const activos = projects.filter((p) => p.status !== 'Entrega');
-  const enCalle = activos.reduce((sum, p) => sum + Number(p.total_budget ?? 0), 0);
-
   return (
     <main className="min-h-dvh px-5 pb-28 pt-8">
-      <header className="mb-7">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-brass-deep">un.studio</p>
-        <h1 className="mt-2 font-display text-3xl font-semibold leading-none">Obra</h1>
-        <p className="mt-3 text-sm text-muted">
-          {activos.length === 0
-            ? 'Sin proyectos activos.'
-            : <>
-                {activos.length} {activos.length === 1 ? 'proyecto activo' : 'proyectos activos'} ·{' '}
-                <span className="tabular">{money(enCalle)}</span> comprometidos
-              </>}
-        </p>
+      <header className="mb-7 flex items-center justify-between">
+        <Logo className="h-7 w-auto" />
+        <button
+          onClick={() => setNewProjectOpen(true)}
+          aria-label="Nuevo proyecto"
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-obra-line text-2xl font-light active:bg-obra-raised"
+        >
+          +
+        </button>
       </header>
 
-      {projects.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-obra-line p-8 text-center">
-          <p className="font-display text-lg">Todavía no hay proyectos</p>
-          <p className="mt-2 text-sm text-muted">Tocá el + para cargar el primero.</p>
+      <div className="mb-4 flex gap-2 rounded-xl bg-obra-raised p-1">
+        {([['todos', 'Todos'], ['etapa', 'Por etapa']] as const).map(([key, label]) => (
+          <button
+            key={key}
+            onClick={() => setView(key)}
+            className={`flex-1 rounded-lg py-2 text-sm font-semibold ${view === key ? 'bg-ink text-obra-bg' : 'text-muted'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {view === 'todos' ? (
+        <div className="grid grid-cols-3 gap-3">
+          <AddProjectTile onClick={() => setNewProjectOpen(true)} compact />
+          {projects.map((p) => <ProjectCard key={p.id} p={p} showStatus compact />)}
         </div>
       ) : (
         <div className="space-y-3">
           {STATUSES.map((status) => {
             const items = grouped(status);
             const isOpen = openGroups[status];
+            const isOnboarding = status === 'Onboarding';
             return (
               <section key={status} className="overflow-hidden rounded-xl border border-obra-line bg-obra-surface">
                 <button
@@ -77,9 +95,10 @@ export default function Dashboard({ projects }: { projects: ProjectOverview[] })
 
                 {isOpen && (
                   <div className="space-y-3 border-t border-obra-line bg-obra-bg/40 p-3">
-                    {items.length === 0
+                    {isOnboarding && <AddProjectRow onClick={() => setNewProjectOpen(true)} />}
+                    {items.length === 0 && !isOnboarding
                       ? <p className="py-3 text-center text-sm text-muted">Nada acá.</p>
-                      : items.map((p) => <ProjectCard key={p.id} p={p} />)}
+                      : items.map((p) => <ProjectListRow key={p.id} p={p} />)}
                   </div>
                 )}
               </section>
@@ -88,7 +107,8 @@ export default function Dashboard({ projects }: { projects: ProjectOverview[] })
         </div>
       )}
 
-      <NewProjectSheet />
+      <NewProjectSheet trigger="external" open={newProjectOpen} onOpenChange={setNewProjectOpen} />
+      <PrimaryNavBar />
     </main>
   );
 }

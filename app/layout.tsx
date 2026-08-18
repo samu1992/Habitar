@@ -1,29 +1,35 @@
 import type { Metadata, Viewport } from 'next';
-import { Bricolage_Grotesque, Inter } from 'next/font/google';
+import localFont from 'next/font/local';
 import './globals.css';
 
-const display = Bricolage_Grotesque({
-  subsets: ['latin'],
-  weight: ['500', '600', '700'],
+const display = localFont({
+  src: [
+    { path: './fonts/stack-sans-headline-500.woff2', weight: '500', style: 'normal' },
+    { path: './fonts/stack-sans-headline-600.woff2', weight: '600', style: 'normal' },
+    { path: './fonts/stack-sans-headline-700.woff2', weight: '700', style: 'normal' },
+  ],
   variable: '--font-display',
   display: 'swap',
 });
 
-const body = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
+const body = localFont({
+  src: [
+    { path: './fonts/stack-sans-text-400.woff2', weight: '400', style: 'normal' },
+    { path: './fonts/stack-sans-text-500.woff2', weight: '500', style: 'normal' },
+    { path: './fonts/stack-sans-text-600.woff2', weight: '600', style: 'normal' },
+  ],
   variable: '--font-body',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'un.studio — Obra',
+  title: 'Habitar — Obra',
   description: 'Panel interno de proyectos',
-  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'un.obra' },
+  appleWebApp: { capable: true, statusBarStyle: 'black-translucent', title: 'Habitar' },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#121110',
+  themeColor: '#171313',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1, // evita el zoom accidental con las manos sucias

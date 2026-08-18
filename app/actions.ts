@@ -59,6 +59,24 @@ const num = (v: FormDataEntryValue | null): number => {
 
 const str = (v: FormDataEntryValue | null): string => String(v ?? '').trim();
 
+/**
+ * Sube la portada al bucket público `project-covers` y devuelve su URL.
+ * No lanza: si falla, el guardado del proyecto sigue sin foto en vez de
+ * perder los datos del formulario por un error de red en la imagen.
+ */
+async function uploadCover(
+  db: ReturnType<typeof supabaseServer>, projectId: string, file: File
+): Promise<{ url?: string; error?: string }> {
+  const ext = file.name.split('.').pop() || 'jpg';
+  const path = `${projectId}/${Date.now()}.${ext}`;
+  const { error } = await db.storage
+    .from('project-covers')
+    .upload(path, file, { upsert: true, contentType: file.type || undefined });
+  if (error) return { error: error.message };
+  const { data } = db.storage.from('project-covers').getPublicUrl(path);
+  return { url: data.publicUrl };
+}
+
 /* ===================================================================
  * PROYECTOS
  * =================================================================== */
@@ -68,7 +86,8 @@ export async function createProject(_prev: Result | null, fd: FormData): Promise
   const client_name = str(fd.get('client_name'));
   if (!client_name) return { ok: false, error: 'Falta el nombre del cliente.' };
 
-  const { data, error } = await supabaseServer()
+  const db = supabaseServer();
+  const { data, error } = await db
     .from('projects')
     .insert({
       client_name,
@@ -84,6 +103,13 @@ export async function createProject(_prev: Result | null, fd: FormData): Promise
     .single();
 
   if (error) return { ok: false, error: error.message };
+
+  const cover = fd.get('cover');
+  if (cover instanceof File && cover.size > 0) {
+    const { url } = await uploadCover(db, data.id, cover);
+    if (url) await db.from('projects').update({ cover_image_url: url }).eq('id', data.id);
+  }
+
   refresh();
   redirect(`/proyecto/${data.id}`);
 }
@@ -111,7 +137,17 @@ export async function updateProject(_prev: Result | null, fd: FormData): Promise
     return { ok: false, error: 'La ganancia tiene que ser un porcentaje entre 0 y 100.' };
   }
 
-  const { error } = await supabaseServer()
+  const db = supabaseServer();
+
+  let cover_image_url: string | undefined;
+  const cover = fd.get('cover');
+  if (cover instanceof File && cover.size > 0) {
+    const { url, error: coverErr } = await uploadCover(db, id, cover);
+    if (coverErr) return { ok: false, error: coverErr };
+    cover_image_url = url;
+  }
+
+  const { error } = await db
     .from('projects')
     .update({
       client_name,
@@ -121,6 +157,7 @@ export async function updateProject(_prev: Result | null, fd: FormData): Promise
       total_budget,
       studio_profit_pct,
       start_date: str(fd.get('start_date')) || null,
+      ...(cover_image_url ? { cover_image_url } : {}),
     })
     .eq('id', id);
 
@@ -449,4 +486,10 @@ export async function signIn(_prev: Result | null, fd: FormData): Promise<Result
     path: '/',
   });
   redirect('/');
+}
+
+export async function signOut(): Promise<void> {
+  const { cookies } = await import('next/headers');
+  (await cookies()).delete('un_acceso');
+  redirect('/acceso');
 }

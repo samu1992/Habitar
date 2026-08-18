@@ -107,6 +107,11 @@ create trigger logistics_touch before update on public.logistics
   for each row execute function public.touch_updated_at();
 
 
+-- 5.1 Foto de portada (columna adelantada acá porque la vista de abajo ya
+--     la usa; las políticas del bucket de Storage están en la sección 11).
+alter table public.projects
+  add column if not exists cover_image_url text;
+
 -- ---------------------------------------------------------------------
 -- 6. VISTA: project_overview
 --    Precalcula lo que el Dashboard necesita para no hacer N+1 queries
@@ -125,7 +130,8 @@ select
   coalesce(f.ingresos, 0)   as ingresos,
   coalesce(f.egresos, 0)    as egresos,
   coalesce(l.total_items, 0) as total_items,
-  coalesce(l.done_items, 0)  as done_items
+  coalesce(l.done_items, 0)  as done_items,
+  p.cover_image_url
 from public.projects p
 left join lateral (
   select
@@ -225,6 +231,33 @@ create index if not exists financials_linked_logistic_idx
 -- A lo sumo un movimiento financiero por ítem de logística.
 create unique index if not exists financials_linked_logistic_uidx
   on public.financials (linked_logistic_id) where linked_logistic_id is not null;
+
+
+-- ---------------------------------------------------------------------
+-- 11. MIGRACIÓN — foto de portada por proyecto (bucket de Storage).
+--     Bucket público: las fotos se muestran en el dashboard sin URL
+--     firmada, igual de expuesto que el resto de la base (ver nota de
+--     RLS más arriba). project-covers/<project_id>/<timestamp>.<ext>
+-- ---------------------------------------------------------------------
+insert into storage.buckets (id, name, public)
+values ('project-covers', 'project-covers', true)
+on conflict (id) do nothing;
+
+drop policy if exists project_covers_read on storage.objects;
+create policy project_covers_read on storage.objects
+  for select to anon, authenticated using (bucket_id = 'project-covers');
+
+drop policy if exists project_covers_write on storage.objects;
+create policy project_covers_write on storage.objects
+  for insert to anon, authenticated with check (bucket_id = 'project-covers');
+
+drop policy if exists project_covers_update on storage.objects;
+create policy project_covers_update on storage.objects
+  for update to anon, authenticated using (bucket_id = 'project-covers');
+
+drop policy if exists project_covers_delete on storage.objects;
+create policy project_covers_delete on storage.objects
+  for delete to anon, authenticated using (bucket_id = 'project-covers');
 
 
 -- ---------------------------------------------------------------------

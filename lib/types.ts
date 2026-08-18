@@ -16,6 +16,7 @@ export interface Project {
   start_date: string | null;
   address: string | null;
   notes: string | null;
+  cover_image_url: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -30,6 +31,7 @@ export interface ProjectOverview {
   total_budget: number;
   start_date: string | null;
   address: string | null;
+  cover_image_url: string | null;
   ingresos: number;
   egresos: number;
   total_items: number;

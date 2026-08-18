@@ -44,7 +44,7 @@ export default function FinancialTab({
         <div className="flex justify-between border-t border-obra-line px-4 py-3">
           <span className="text-sm text-muted">Ganancia del Estudio</span>
           <span className="flex items-baseline gap-1.5">
-            <span className={`tabular text-[11px] font-semibold ${underMinProfit ? 'text-alert' : 'text-sage'}`}>
+            <span className={`tabular text-[11px] font-semibold ${underMinProfit ? 'text-mandarina' : 'text-celeste'}`}>
               {underMinProfit ? '⚠ ' : ''}{studioProfitPct.toFixed(1)}%
             </span>
             <span className="tabular text-sm font-semibold">{money(studioProfit)}</span>
@@ -55,7 +55,7 @@ export default function FinancialTab({
           <span className="tabular text-sm font-semibold">{money(executionBudget)}</span>
         </div>
         {underMinProfit && (
-          <p className="border-t border-obra-line bg-alert/10 px-4 py-2.5 text-xs font-medium text-alert">
+          <p className="border-t border-obra-line bg-bordo/40 px-4 py-2.5 text-xs font-medium text-mandarina">
             Por debajo del piso de {MIN_PROFIT_PCT}%. Revisá el presupuesto de este proyecto.
           </p>
         )}
@@ -64,11 +64,11 @@ export default function FinancialTab({
       <div className="grid grid-cols-2 gap-3">
         <div className="rounded-xl border border-obra-line bg-obra-surface p-4">
           <p className="label mb-1">Consumido</p>
-          <p className="tabular font-display text-xl font-semibold text-clay">{money(egresos)}</p>
+          <p className="tabular font-display text-xl font-semibold text-mandarina">{money(egresos)}</p>
         </div>
         <div className="rounded-xl border border-obra-line bg-obra-surface p-4">
           <p className="label mb-1">Disponible (Obra)</p>
-          <p className={`tabular font-display text-xl font-semibold ${remainingExecution < 0 ? 'text-clay' : 'text-sage'}`}>
+          <p className={`tabular font-display text-xl font-semibold ${remainingExecution < 0 ? 'text-mandarina' : 'text-celeste'}`}>
             {money(remainingExecution)}
           </p>
         </div>
@@ -76,7 +76,7 @@ export default function FinancialTab({
 
       <div className="rounded-xl border border-obra-line bg-obra-surface p-4">
         <p className="label mb-1">Cobrado</p>
-        <p className="tabular font-display text-xl font-semibold text-sage">{money(ingresos)}</p>
+        <p className="tabular font-display text-xl font-semibold text-celeste">{money(ingresos)}</p>
       </div>
 
       <section>
@@ -92,7 +92,7 @@ export default function FinancialTab({
               const linked = !!r.linked_logistic_id;
               return (
                 <li key={r.id} className={`flex items-center gap-3 px-4 py-3.5 ${i ? 'border-t border-obra-line' : ''}`}>
-                  <span className={`h-8 w-1 shrink-0 rounded-full ${income ? 'bg-sage' : 'bg-clay'}`} />
+                  <span className={`h-8 w-1 shrink-0 rounded-full ${income ? 'bg-celeste' : 'bg-mandarina'}`} />
                   <button
                     type="button"
                     onClick={() => !linked && setEditing(r)}
@@ -105,7 +105,7 @@ export default function FinancialTab({
                     </p>
                     <p className="tabular text-xs text-muted">{shortDate(r.date)}</p>
                   </button>
-                  <span className={`tabular shrink-0 text-sm font-semibold ${income ? 'text-sage' : 'text-ink'}`}>
+                  <span className={`tabular shrink-0 text-sm font-semibold ${income ? 'text-celeste' : 'text-ink'}`}>
                     {income ? '+' : '−'}{money(Number(r.amount))}
                   </span>
                   <button
@@ -133,7 +133,7 @@ export default function FinancialTab({
       {/* FAB: carga en menos de 10 segundos, parado en el mostrador */}
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-24 right-5 z-40 h-16 w-16 rounded-full bg-brass text-3xl font-light text-obra-bg shadow-lg shadow-black/40 active:bg-brass-deep"
+        className="fixed bottom-24 right-5 z-40 h-16 w-16 rounded-full bg-ink text-3xl font-light text-obra-bg shadow-lg shadow-black/40 active:bg-ink/80"
         aria-label="Agregar movimiento"
       >
         +
@@ -149,7 +149,7 @@ export default function FinancialTab({
               <button
                 key={t} type="button" onClick={() => setType(t)}
                 className={`rounded-lg py-3 text-sm font-semibold ${
-                  type === t ? (t === 'Ingreso' ? 'bg-sage text-obra-bg' : 'bg-clay text-obra-bg') : 'text-muted'
+                  type === t ? (t === 'Ingreso' ? 'bg-celeste text-obra-bg' : 'bg-mandarina text-obra-bg') : 'text-muted'
                 }`}
               >
                 {t === 'Egreso' ? 'Gasto' : 'Cobro'}
@@ -176,7 +176,7 @@ export default function FinancialTab({
             />
           </div>
 
-          {state && !state.ok && <p className="text-sm text-alert">{state.error}</p>}
+          {state && !state.ok && <p className="text-sm text-mandarina">{state.error}</p>}
           <button className="btn-primary" disabled={pending}>
             {pending ? 'Guardando…' : 'Guardar movimiento'}
           </button>
@@ -208,7 +208,7 @@ export default function FinancialTab({
               <input id="e-date" name="date" type="date" className="field" defaultValue={editing.date} />
             </div>
 
-            {editState && !editState.ok && <p className="text-sm text-alert">{editState.error}</p>}
+            {editState && !editState.ok && <p className="text-sm text-mandarina">{editState.error}</p>}
             <button className="btn-primary" disabled={editPending}>
               {editPending ? 'Guardando…' : 'Guardar cambios'}
             </button>

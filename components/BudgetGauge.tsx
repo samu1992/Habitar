@@ -19,7 +19,7 @@ export default function BudgetGauge({ spent, total }: { spent: number; total: nu
         <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">
           Consumido
         </span>
-        <span className={`tabular font-display text-2xl font-semibold ${over ? 'text-clay' : 'text-ink'}`}>
+        <span className={`tabular font-display text-2xl font-semibold ${over ? 'text-mandarina' : 'text-ink'}`}>
           {Math.round(pct)}%
         </span>
       </div>
@@ -27,7 +27,7 @@ export default function BudgetGauge({ spent, total }: { spent: number; total: nu
       <div className="relative h-7 overflow-hidden rounded-lg bg-obra-raised" role="img"
            aria-label={`${Math.round(pct)} por ciento del presupuesto consumido`}>
         <div
-          className={`h-full transition-[width] duration-500 ${over ? 'bg-clay' : 'bg-brass'}`}
+          className={`h-full transition-[width] duration-500 ${over ? 'bg-mandarina' : 'bg-ink'}`}
           style={{ width: `${width}%` }}
         />
         {[25, 50, 75].map((t) => (
@@ -37,7 +37,7 @@ export default function BudgetGauge({ spent, total }: { spent: number; total: nu
 
       <div className="mt-3 flex justify-between text-sm">
         <span className="tabular text-muted">{money(spent)} de {money(total)}</span>
-        <span className={`tabular font-medium ${over ? 'text-clay' : 'text-sage'}`}>
+        <span className={`tabular font-medium ${over ? 'text-mandarina' : 'text-celeste'}`}>
           {over ? `${money(Math.abs(remaining))} de más` : `${money(remaining)} libres`}
         </span>
       </div>

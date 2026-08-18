@@ -44,11 +44,11 @@ export default function StatusSheet({
               key={s}
               onClick={() => pick(s)}
               className={`flex w-full items-center gap-3 rounded-xl border px-4 py-4 text-left
-                ${s === current ? 'border-brass bg-obra-raised' : 'border-obra-line'}`}
+                ${s === current ? 'border-ink bg-obra-raised' : 'border-obra-line'}`}
             >
               <span className="h-4 w-4 rounded-sm" style={{ background: STATUS_CHIP[s] }} />
               <span className="font-medium">{s}</span>
-              {s === current && <span className="ml-auto text-xs text-brass">Actual</span>}
+              {s === current && <span className="ml-auto text-xs text-ink">Actual</span>}
             </button>
           ))}
         </div>

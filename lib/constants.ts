@@ -9,10 +9,10 @@ export const STATUSES: ProjectStatus[] = ['Onboarding', 'Pre-Producción', 'Prod
  * medida que la obra avanza — la última mano es la más clara.
  */
 export const STATUS_CHIP: Record<ProjectStatus, string> = {
-  'Onboarding': '#8FA382',
-  'Pre-Producción': '#C79A56',
-  'Producción': '#D0805A',
-  'Entrega': '#E8DFCB',
+  'Onboarding': '#79A4EC',
+  'Pre-Producción': '#CDBC04',
+  'Producción': '#EB754F',
+  'Entrega': '#F5F1E2',
 };
 
 export const SERVICES: ServiceType[] = ['Integral', 'Pintura', 'Consultoría'];

@@ -1,9 +1,11 @@
 import type { Config } from 'tailwindcss';
 
 /**
- * Paleta derivada de la identidad de un.studio (servicios.html), invertida
- * para uso nocturno / en obra. El fondo no es negro puro: es un carbón
- * cálido, para que el bronce y la arcilla no se vean fluorescentes.
+ * Paleta oficial de marca (un.studio, sección 5 del brand kit), invertida
+ * para uso nocturno / en obra. El fondo y las superficies son interpolaciones
+ * de Negro + Gris oscuro — monocromo puro, sin tinte agregado. Los colores
+ * de acento (bordó, mandarina, verde, celeste, mostaza, amarillo, durazno)
+ * quedan disponibles para estados puntuales (avance, cifras, alertas).
  */
 const config: Config = {
   content: ['./app/**/*.{ts,tsx}', './components/**/*.{ts,tsx}'],
@@ -11,17 +13,22 @@ const config: Config = {
     extend: {
       colors: {
         obra: {
-          bg: '#121110',        // fondo
-          surface: '#1B1917',   // tarjetas
-          raised: '#24211D',    // inputs, sheets
-          line: '#322E29',      // bordes
+          bg: '#171313',        // fondo — Negro
+          surface: '#1C1818',   // tarjetas
+          raised: '#201C1B',    // inputs, sheets
+          line: '#2E2A28',      // bordes
         },
-        ink: '#F3EEE2',         // texto principal (crema)
-        muted: '#9A9287',       // texto secundario
-        brass: { DEFAULT: '#C79A56', deep: '#9C7A4C' },
-        sage: '#8FA382',
-        clay: '#D0805A',
-        alert: '#D4614B',
+        ink: '#F5F1E2',         // texto principal — Crema
+        muted: '#8C8880',       // texto secundario — Gris medio
+        grafito: '#4A4542',     // Gris oscuro (texto sobre crema, superficies claras)
+        marfil: '#D9D4C7',      // Gris claro (fondos sutiles sobre crema)
+        bordo: '#452122',
+        mandarina: '#EB754F',
+        verde: '#093C2D',
+        celeste: '#79A4EC',
+        mostaza: '#CDBC04',
+        amarillo: '#F2BC5A',
+        durazno: '#FCDDAE',
       },
       fontFamily: {
         display: ['var(--font-display)', 'ui-sans-serif', 'system-ui'],

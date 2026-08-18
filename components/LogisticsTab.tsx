@@ -112,14 +112,14 @@ export default function LogisticsTab({
                         onClick={() => toggle(r.id, cat)}
                         aria-label={`${r.item_name}. Estado: ${r.status}. Tocar para ${shopping ? 'marcar' : 'avanzar'}.`}
                         className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border-2 transition-colors
-                          ${finished ? 'border-sage bg-sage' : inProgress ? 'border-brass bg-brass/20' : 'border-obra-line'}`}
+                          ${finished ? 'border-celeste bg-celeste' : inProgress ? 'border-ink bg-ink/20' : 'border-obra-line'}`}
                       >
                         {finished && (
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-                            <path d="M5 13l4 4L19 7" stroke="#121110" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                            <path d="M5 13l4 4L19 7" stroke="#171313" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
                           </svg>
                         )}
-                        {inProgress && <span className="h-2.5 w-2.5 rounded-full bg-brass" />}
+                        {inProgress && <span className="h-2.5 w-2.5 rounded-full bg-ink" />}
                       </button>
 
                       <button
@@ -153,7 +153,7 @@ export default function LogisticsTab({
                           target="_blank"
                           rel="noopener"
                           aria-label={`WhatsApp a ${r.supplier_or_worker_name ?? 'contacto'}`}
-                          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-sage/15 text-sage active:bg-sage/30"
+                          className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-celeste/15 text-celeste active:bg-celeste/30"
                         >
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
                             <path d="M12 2a10 10 0 00-8.6 15L2 22l5.2-1.4A10 10 0 1012 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .1-1.7-.1-.4-.1-.9-.3-1.6-.6-2.8-1.2-4.6-4-4.7-4.2-.1-.2-1.1-1.4-1.1-2.7s.7-1.9 1-2.2c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.3 0 .5l-.4.5c-.1.2-.3.3-.1.6.1.3.6 1.1 1.4 1.8 1 .8 1.7 1.1 2 1.2.2.1.4.1.6-.1l.7-.9c.2-.2.4-.2.6-.1l1.9.9c.2.1.4.2.4.3.1.2.1.7-.1 1.3z" />
@@ -238,7 +238,7 @@ export default function LogisticsTab({
               </div>
             )}
           </div>
-          {addState && !addState.ok && <p className="text-sm text-alert">{addState.error}</p>}
+          {addState && !addState.ok && <p className="text-sm text-mandarina">{addState.error}</p>}
           <button className="btn-primary" disabled={addPending}>
             {addPending ? 'Guardando…' : 'Agregar'}
           </button>
@@ -259,7 +259,7 @@ export default function LogisticsTab({
               className="field tabular text-center font-display text-3xl"
               defaultValue={costFor.real_cost ?? costFor.expected_cost ?? 0}
             />
-            {costState && !costState.ok && <p className="text-sm text-alert">{costState.error}</p>}
+            {costState && !costState.ok && <p className="text-sm text-mandarina">{costState.error}</p>}
             <button className="btn-primary" disabled={costPending}>
               {costPending ? 'Guardando…' : 'Guardar costo'}
             </button>
@@ -316,7 +316,7 @@ export default function LogisticsTab({
                 <input id="edit-phone" name="contact_phone" type="tel" inputMode="tel" className="field" defaultValue={editFor.contact_phone ?? ''} />
               </div>
             )}
-            {editState && !editState.ok && <p className="text-sm text-alert">{editState.error}</p>}
+            {editState && !editState.ok && <p className="text-sm text-mandarina">{editState.error}</p>}
             <button className="btn-primary" disabled={editPending}>
               {editPending ? 'Guardando…' : 'Guardar cambios'}
             </button>
